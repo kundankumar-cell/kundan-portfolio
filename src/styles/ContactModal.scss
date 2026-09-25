@@ -1,0 +1,353 @@
+// ContactModal Styles — Hand-drawn Paper Aesthetic
+@use './variables' as *;
+
+.contact-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(10, 10, 10, 0.45);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    pointer-events: auto;
+    animation: contactModalFadeIn 0.25s ease-out forwards;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+@keyframes contactModalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes contactCardPop {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(12px) rotate(-1deg);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0) rotate(0deg);
+    }
+}
+
+.contact-modal-card {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 2rem 1.75rem 1.75rem;
+    box-sizing: border-box;
+    box-shadow: 
+        0 20px 45px rgba(0, 0, 0, 0.22),
+        0 6px 16px rgba(0, 0, 0, 0.12),
+        0 0 0 2px rgba(26, 26, 26, 0.85);
+    animation: contactCardPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    overflow: hidden;
+    color: #1a1a1a;
+    font-family: 'Cabin Sketch', 'Gloria Hallelujah', cursive, sans-serif;
+
+    // Paper Texture Background Layer
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: url('/textures/paper-texture.webp') center center;
+        background-size: cover;
+        opacity: 0.95;
+        z-index: 0;
+        pointer-events: none;
+        border-radius: 12px;
+    }
+
+    // Inner sketch border
+    .modal-sketch-border {
+        position: absolute;
+        inset: 6px;
+        border: 1.5px dashed rgba(26, 26, 26, 0.3);
+        border-radius: 10px;
+        pointer-events: none;
+        z-index: 1;
+    }
+}
+
+.contact-modal-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.contact-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 1.25rem;
+
+    .modal-title-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        .modal-icon {
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+
+        .modal-title {
+            margin: 0;
+            font-family: 'Cabin Sketch', 'Gloria Hallelujah', cursive, sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+    }
+
+    .modal-close-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(26, 26, 26, 0.06);
+        border: 1.5px solid rgba(26, 26, 26, 0.25);
+        color: #1a1a1a;
+        cursor: pointer;
+        padding: 0;
+        transition: all 0.2s ease;
+        outline: none;
+
+        svg {
+            width: 18px;
+            height: 18px;
+            stroke-width: 2.5;
+            transition: transform 0.2s ease;
+        }
+
+        &:hover, &:focus-visible {
+            background: rgba(26, 26, 26, 0.12);
+            border-color: #1a1a1a;
+            transform: scale(1.08) rotate(90deg);
+        }
+
+        &:focus-visible {
+            box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.25);
+        }
+    }
+}
+
+.contact-modal-value-box {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1.5px solid rgba(26, 26, 26, 0.7);
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    margin-bottom: 1.25rem;
+    box-sizing: border-box;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06), inset 0 1px 2px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    transition: all 0.2s ease;
+
+    &:hover {
+        border-color: #1a1a1a;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .value-label {
+        font-size: 0.85rem;
+        color: #666666;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-family: 'Inter', -apple-system, sans-serif;
+        font-weight: 600;
+    }
+
+    .value-link {
+        color: #1a1a1a;
+        font-size: 1.25rem;
+        font-weight: 700;
+        text-decoration: none;
+        word-break: break-all;
+        font-family: 'Inter', -apple-system, sans-serif;
+        letter-spacing: -0.01em;
+        transition: color 0.15s ease;
+
+        &:hover {
+            color: #0066cc;
+            text-decoration: underline;
+        }
+
+        &:focus-visible {
+            outline: 2px solid #1a1a1a;
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+    }
+}
+
+.contact-modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+    justify-content: center;
+
+    .modal-btn {
+        flex: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+        padding: 0.75rem 1.1rem;
+        border-radius: 8px;
+        font-family: 'Cabin Sketch', 'Gloria Hallelujah', cursive, sans-serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        text-decoration: none;
+        box-sizing: border-box;
+        border: 2px solid #1a1a1a;
+        outline: none;
+
+        svg {
+            width: 18px;
+            height: 18px;
+            stroke-width: 2.2;
+        }
+
+        &.btn-primary {
+            background: #1a1a1a;
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+
+            svg {
+                stroke: #ffffff;
+            }
+
+            &:hover, &:focus-visible {
+                background: #333333;
+                transform: translateY(-2px);
+                box-shadow: 0 6px 14px rgba(0, 0, 0, 0.22);
+            }
+
+            &:active {
+                transform: translateY(0);
+            }
+        }
+
+        &.btn-secondary {
+            background: #fafafa;
+            color: #1a1a1a;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+
+            svg {
+                stroke: #1a1a1a;
+            }
+
+            &:hover, &:focus-visible {
+                background: #f0f0f0;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+            }
+
+            &:active {
+                transform: translateY(0);
+            }
+
+            &.btn-copied {
+                background: #e6f9ea;
+                border-color: #2e7d32;
+                color: #2e7d32;
+
+                svg {
+                    stroke: #2e7d32;
+                }
+            }
+        }
+
+        &:focus-visible {
+            box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.35);
+        }
+    }
+}
+
+.copy-toast {
+    margin-top: 0.85rem;
+    font-size: 0.95rem;
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-weight: 600;
+    color: #2e7d32;
+    background: rgba(46, 125, 50, 0.1);
+    border: 1px solid rgba(46, 125, 50, 0.25);
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    animation: toastPop 0.2s ease-out;
+
+    svg {
+        width: 15px;
+        height: 15px;
+        stroke: #2e7d32;
+        stroke-width: 2.5;
+    }
+}
+
+@keyframes toastPop {
+    from {
+        opacity: 0;
+        transform: translateY(4px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 480px) {
+    .contact-modal-card {
+        padding: 1.5rem 1.25rem 1.25rem;
+        max-width: 92vw;
+    }
+
+    .contact-modal-header .modal-title-wrapper .modal-title {
+        font-size: 1.5rem;
+    }
+
+    .contact-modal-value-box .value-link {
+        font-size: 1.05rem;
+    }
+
+    .contact-modal-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+
+        .modal-btn {
+            width: 100%;
+            padding: 0.65rem 1rem;
+            font-size: 1.05rem;
+        }
+    }
+}
