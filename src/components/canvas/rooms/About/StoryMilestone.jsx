@@ -145,11 +145,14 @@ const StoryMilestone = ({
         }
     }, [type]);
 
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const isSmallPhone = typeof window !== 'undefined' && window.innerWidth < 440;
+
     return (
         <group ref={groupRef} position={position}>
             {/* Background decorative element */}
             <mesh position={[0, 0, 0.5]}>
-                <planeGeometry args={[8, 5]} />
+                <planeGeometry args={[isSmallPhone ? 5.5 : (isMobile ? 7 : 8), isSmallPhone ? 6 : 5]} />
                 <meshBasicMaterial
                     ref={decorRef}
                     color={styles.decorColor}
@@ -162,11 +165,13 @@ const StoryMilestone = ({
             {/* Main title */}
             <Text
                 ref={titleRef}
-                position={[0, 0.5, 0]}
-                fontSize={styles.titleSize}
+                position={[0, isSmallPhone ? 0.8 : 0.5, 0]}
+                fontSize={isSmallPhone ? styles.titleSize * 0.85 : styles.titleSize}
                 color={styles.titleColor}
                 anchorX="center"
                 anchorY="middle"
+                maxWidth={isSmallPhone ? 5 : (isMobile ? 6.5 : 12)}
+                textAlign="center"
                 font="/fonts/CabinSketch-Bold.ttf"
                 fillOpacity={0}
             >
@@ -177,11 +182,14 @@ const StoryMilestone = ({
             {subtitle && (
                 <Text
                     ref={subtitleRef}
-                    position={[0, -0.5, 0]}
-                    fontSize={styles.subtitleSize}
+                    position={[0, isSmallPhone ? -0.4 : -0.5, 0]}
+                    fontSize={isSmallPhone ? 0.28 : (isMobile ? 0.32 : styles.subtitleSize)}
                     color={styles.subtitleColor}
                     anchorX="center"
                     anchorY="middle"
+                    maxWidth={isSmallPhone ? 4.5 : (isMobile ? 5.8 : 9)}
+                    textAlign="center"
+                    lineHeight={1.35}
                     font="/fonts/CabinSketch-Regular.ttf"
                     fillOpacity={0}
                 >

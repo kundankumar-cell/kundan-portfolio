@@ -1,6 +1,6 @@
 import { useRef, useState, useMemo, useEffect, forwardRef, useImperativeHandle, memo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { Text, useTexture, Float, PositionalAudio } from '@react-three/drei';
+import { Text, useTexture, Float, PositionalAudio, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import gsap from 'gsap';
 import { Observer } from 'gsap/all';
@@ -357,21 +357,30 @@ const GalleryRoom = ({ showRoom, onReady, isExiting, isWarmup }) => {
                 const orig = e.event;
                 if (orig.touches && orig.touches.length === 1) {
                     lastTouchX.current = orig.touches[0].clientX;
+                } else if (orig.clientX !== undefined) {
+                    lastTouchX.current = orig.clientX;
                 }
             },
             onDrag: (e) => {
                 if (!showRoom || selectedCard !== null || globalIsAnimating || isTransitioning) return;
                 const orig = e.event;
+                let currentX = 0;
                 if (orig.touches && orig.touches.length === 1) {
-                    const deltaX = lastTouchX.current - orig.touches[0].clientX;
-                    lastTouchX.current = orig.touches[0].clientX;
-                    targetScroll.current += deltaX * 0.008;
+                    currentX = orig.touches[0].clientX;
+                } else if (orig.clientX !== undefined) {
+                    currentX = orig.clientX;
+                } else {
+                    targetScroll.current += -e.deltaX * 0.008;
+                    return;
                 }
+                const deltaX = lastTouchX.current - currentX;
+                lastTouchX.current = currentX;
+                targetScroll.current += deltaX * 0.008;
             }
         });
 
         return () => scrollObserver.kill();
-    }, [showRoom, selectedCard, globalIsAnimating]);
+    }, [showRoom, selectedCard, globalIsAnimating, isTransitioning]);
 
     useFrame((state, delta) => {
         currentScroll.current = THREE.MathUtils.lerp(currentScroll.current, targetScroll.current, delta * 5);
@@ -713,6 +722,7 @@ const ProjectCard = memo(forwardRef(({ index, project, clothespinTexture, curren
     const buttonGroupRef = useRef(); // Ref for the interactive back button
     const detailsGroupRef = useRef(); // Ref for the project details on the back
     const techStackGroupRef = useRef(); // Ref for the tech stack section on the back
+    const detailsTitleRef = useRef();
     const detailsTextRef1 = useRef();
     const detailsTextRef2 = useRef();
     const techTextRef = useRef();
@@ -826,9 +836,10 @@ const ProjectCard = memo(forwardRef(({ index, project, clothespinTexture, curren
                     playPaperSound();
 
                     const isMobile = window.innerWidth < 768;
+                    const isSmallPhone = window.innerWidth < 440;
                     const targetX_World = 0;
-                    const targetY_World = isMobile ? -0.2 : 0.1;
-                    const targetZ_World = isMobile ? 0.5 : 1.5;
+                    const targetY_World = isSmallPhone ? -0.22 : (isMobile ? -0.2 : 0.1);
+                    const targetZ_World = isSmallPhone ? 0.25 : (isMobile ? 0.5 : 1.5);
 
                     const parentPos = cardRef.current.position;
                     const targetX = targetX_World - parentPos.x;
@@ -932,10 +943,11 @@ const ProjectCard = memo(forwardRef(({ index, project, clothespinTexture, curren
                         }, '<');
                     }
 
+                    const targetScale = isSmallPhone ? 0.95 : (isMobile ? 1.02 : 1.1);
                     timeline.to(paperRef.current.scale, {
-                        x: 1.1,
-                        y: 1.1,
-                        z: 1.1,
+                        x: targetScale,
+                        y: targetScale,
+                        z: targetScale,
                         duration: 0.3,
                         ease: 'sine.out'
                     }, '-=0.4');
@@ -982,6 +994,7 @@ const ProjectCard = memo(forwardRef(({ index, project, clothespinTexture, curren
                     }
                 };
                 applyOpacity(textRef);
+                applyOpacity(detailsTitleRef);
                 applyOpacity(detailsTextRef1);
                 applyOpacity(detailsTextRef2);
                 applyOpacity(techTextRef);
@@ -1168,17 +1181,18 @@ const ProjectCard = memo(forwardRef(({ index, project, clothespinTexture, curren
                     position={[0, 0.75, 0]}
                     rotation={[Math.PI, 0, 0]}
                 >
-                    {/* Warstwa 1: Wizualna ramka przycisku (bez eventów) */}
+                    {/* Warstwa 1: Wizualna ramka przycisku (czysta grafika 3D bez eventów) */}
                     <mesh>
                         <planeGeometry args={[1.2, 1.2 / 3.613]} />
                         <meshBasicMaterial color="#ffffff"
                             map={project.buttonTexture}
                             transparent={true}
                             alphaTest={0.05}
+                            side={THREE.DoubleSide}
                         />
                     </mesh>
 
-                    {/* Warstwa 2: Napis OPEN PROJECT (bez eventów) */}
+                    {/* Warstwa 2: Napis OPEN PROJECT (czysta grafika 3D bez eventów) */}
                     <Text
                         ref={openTextRef}
                         position={[0, 0, 0.01]}
@@ -1192,31 +1206,52 @@ const ProjectCard = memo(forwardRef(({ index, project, clothespinTexture, curren
                         OPEN PROJECT
                     </Text>
 
-                    {/* Warstwa 3: Niewidoczny hit-area pokrywający cały przycisk - łapie WSZYSTKIE eventy */}
-                    <mesh
-                        position={[0, 0, 0.02]}
-                        onClick={(e) => {
-                            if (isSelected && !isTransitioning) {
-                                e.stopPropagation();
-                                window.open(project.url, '_blank');
-                            }
-                        }}
-                        onPointerEnter={(e) => {
-                            if (isSelected && !isTransitioning) {
-                                e.stopPropagation();
-                                setBtnHovered(true);
-                            }
-                        }}
-                        onPointerLeave={(e) => {
-                            if (isSelected && !isTransitioning) {
-                                e.stopPropagation();
-                            }
-                            setBtnHovered(false);
-                        }}
-                    >
-                        <planeGeometry args={[1.2, 1.2 / 3.613]} />
-                        <meshBasicMaterial color="#e0e0e0" transparent={true} opacity={0} />
-                    </mesh>
+                    {/* Warstwa 3: Niezależna, transparentna nakładka HTML (izolowana od raycasta R3F) */}
+                    {isSelected && !isAnimating && !isTransitioning && (
+                        <Html
+                            transform
+                            position={[0, 0, 0.02]}
+                            distanceFactor={1}
+                            style={{
+                                pointerEvents: 'auto',
+                                userSelect: 'none',
+                            }}
+                        >
+                            <a
+                                href={project.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                }}
+                                onPointerDown={(e) => {
+                                    e.stopPropagation();
+                                }}
+                                onPointerUp={(e) => {
+                                    e.stopPropagation();
+                                }}
+                                onMouseEnter={() => {
+                                    setBtnHovered(true);
+                                }}
+                                onMouseLeave={() => {
+                                    setBtnHovered(false);
+                                }}
+                                style={{
+                                    display: 'block',
+                                    width: '480px',
+                                    height: `${480 / 3.613}px`,
+                                    background: 'transparent',
+                                    border: 'none',
+                                    outline: 'none',
+                                    cursor: 'pointer',
+                                    touchAction: 'manipulation',
+                                    WebkitTapHighlightColor: 'transparent',
+                                }}
+                                aria-label={`Open ${project.title}`}
+                                title={`Open ${project.title}`}
+                            />
+                        </Html>
+                    )}
                 </group>
 
                 {/* === TEKST NA PLECACH KARTKI (PROJECT DETAILS) === */}
@@ -1225,33 +1260,58 @@ const ProjectCard = memo(forwardRef(({ index, project, clothespinTexture, curren
                     position={[0, -0.44, 0]} // Miejsce u góry (gdy Y=0.75 to dół, to Y=-0.4 to góra)
                     rotation={[Math.PI, 0, 0]}
                 >
+                    {/* Project Title (e.g. EDUSURE, ONEHEALTH, ECOSENSE) */}
+                    <Text
+                        ref={detailsTitleRef}
+                        position={[0, 0.35, 0.01]}
+                        fontSize={0.11}
+                        color="#111111"
+                        font="/fonts/CabinSketch-Bold.ttf"
+                        anchorX="center"
+                        anchorY="middle"
+                        maxWidth={1.3}
+                        textAlign="center"
+                        fillOpacity={0}
+                    >
+                        {project.title}
+                    </Text>
+
+                    {/* Project Tagline / Category */}
                     <Text
                         ref={detailsTextRef1}
-                        position={[0, 0.28, 0.01]} // Względem środka detailsGroupRef, wyżej
-                        fontSize={0.08}
-                        color="#1c1c1c"
+                        position={[0, 0.25, 0.01]}
+                        fontSize={0.044}
+                        color="#555555"
                         font="/fonts/CabinSketch-Bold.ttf"
                         anchorX="center"
                         anchorY="middle"
                         maxWidth={1.25}
+                        lineHeight={1.22}
                         textAlign="center"
-                        fillOpacity={0} // Start hidden
+                        fillOpacity={0}
                     >
                         {project.type ? project.type.toUpperCase() : "PROJECT DETAILS"}
                     </Text>
 
+                    {/* Subtle sketch divider between header and description */}
+                    <mesh position={[0, 0.18, 0.005]}>
+                        <planeGeometry args={[0.9, 0.003]} />
+                        <meshBasicMaterial color="#333333" transparent opacity={0.22} />
+                    </mesh>
+
+                    {/* Project Short Description */}
                     <Text
                         ref={detailsTextRef2}
-                        position={[0, 0.17, 0.01]} // Poniżej nagłówka
-                        fontSize={0.052}
-                        color="#333333"
+                        position={[0, 0.13, 0.01]}
+                        fontSize={0.047}
+                        color="#2a2a2a"
                         font="/fonts/CabinSketch-Bold.ttf"
                         anchorX="center"
                         anchorY="top"
-                        maxWidth={1.2} // Maksymalna szerokość zanim zacznie łamać linie
-                        lineHeight={1.35}
+                        maxWidth={1.22}
+                        lineHeight={1.38}
                         textAlign="center"
-                        fillOpacity={0} // Start hidden
+                        fillOpacity={0}
                     >
                         {project.description}
                     </Text>
@@ -1263,18 +1323,24 @@ const ProjectCard = memo(forwardRef(({ index, project, clothespinTexture, curren
                     position={[0, 0.28, 0]} // Pomiędzy Project Details a przyciskiem Open Project
                     rotation={[Math.PI, 0, 0]}
                 >
+                    {/* Subtle sketch divider above tech stack */}
+                    <mesh position={[0, 0.28, 0.005]}>
+                        <planeGeometry args={[1.0, 0.003]} />
+                        <meshBasicMaterial color="#333333" transparent opacity={0.22} />
+                    </mesh>
+
                     {project.achievement && (
                         <Text
                             ref={achievementTextRef}
-                            position={[0, 0.22, 0.01]}
-                            fontSize={0.08}
-                            color="#1c1c1c"
+                            position={[0, 0.21, 0.01]}
+                            fontSize={0.062}
+                            color="#222222"
                             font="/fonts/CabinSketch-Bold.ttf"
                             anchorX="center"
                             anchorY="middle"
                             fillOpacity={0}
                         >
-                            ★ {project.achievement} ★
+                            ★ {project.achievement.toUpperCase()} ★
                         </Text>
                     )}
 
@@ -1282,21 +1348,20 @@ const ProjectCard = memo(forwardRef(({ index, project, clothespinTexture, curren
                         <>
                             <Text
                                 ref={techTextRef}
-                                position={[0, project.achievement ? 0.13 : 0.17, 0.01]}
-                                fontSize={0.065}
-                                color="#1c1c1c"
+                                position={[0, project.achievement ? 0.12 : 0.18, 0.01]}
+                                fontSize={0.062}
+                                color="#1a1a1a"
                                 font="/fonts/CabinSketch-Bold.ttf"
                                 anchorX="center"
                                 anchorY="middle"
-                                fillOpacity={0} // Start hidden
+                                fillOpacity={0}
                             >
                                 TECH STACK
                             </Text>
 
-                            {/* 4 Tech Stack Boxes */}
-                            <group position={[0, project.achievement ? -0.03 : 0.00, 0.01]}>
+                            {/* Tech Stack Boxes */}
+                            <group position={[0, project.achievement ? -0.04 : 0.01, 0.01]}>
                                 {project.techStack.map((tech, idx) => {
-                                    // 4 boxes aligned horizontally
                                     const spacing = 0.27;
                                     const startX = -((project.techStack.length - 1) * spacing) / 2;
                                     const xPos = startX + (idx * spacing);
@@ -1429,7 +1494,7 @@ const TechStackBox = ({ name, path, position, paintProgress }) => {
             </mesh>
 
             {/* Technology Logo Icon */}
-            <mesh position={[0, 0.04, 0.01]}>
+            <mesh position={[0, 0.045, 0.01]}>
                 <planeGeometry args={[0.13, 0.13]} />
                 <meshBasicMaterial
                     color="#ffffff"
@@ -1442,13 +1507,14 @@ const TechStackBox = ({ name, path, position, paintProgress }) => {
             {/* Technology Name */}
             <Text
                 ref={textRef}
-                position={[0, -0.075, 0.012]}
-                fontSize={0.038}
+                position={[0, -0.065, 0.012]}
+                fontSize={0.034}
                 color="#1c1c1c"
                 font="/fonts/CabinSketch-Bold.ttf"
                 anchorX="center"
                 anchorY="middle"
-                maxWidth={0.23}
+                maxWidth={0.22}
+                lineHeight={1.15}
                 textAlign="center"
                 fillOpacity={0}
             >

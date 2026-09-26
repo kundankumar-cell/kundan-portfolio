@@ -32,12 +32,15 @@ body,
   display: flex;
   place-items: center;
   min-width: 320px;
+  max-width: 100%;
+  overflow-x: hidden;
   min-height: 100vh;
   cursor: auto;
 }
 
 #root {
   width: 100%;
+  max-width: 100%;
 }
 
 
